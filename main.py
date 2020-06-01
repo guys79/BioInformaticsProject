@@ -89,7 +89,11 @@ def get_miRNA_and_host_sequences(pairs,miRNA_flie_name,mRNA_file_name):
     :return: [(miRNA,(mRNA,sequence))]
     """
     new_pairs = []
+    leng = len(pairs)
+    count = 1
     for pair in pairs:
+        print("%d/%d" % (leng,count))
+        count+=1
         host_header = pair[1]
         host_sequence = get_3_tag_UTR(host_header,mRNA_file_name)
         miRNA_header = pair[0]
@@ -133,18 +137,24 @@ def is_seed_criteria_met_in_pairs(pairs):
 
 
 
-path = "%s\%s" %(os.path.dirname(os.path.abspath(__file__)),r"Resources\res_blastn_compact_mRNA.txt")
+#path = "%s\%s" %(os.path.dirname(os.path.abspath(__file__)),r"Resources\res_blastn_compact_mRNA.txt")
+path = "%s\%s" %(os.path.dirname(os.path.abspath(__file__)),r"Resources\res_blastn_mRNA.fasta")
+print("parsing query result")
 query_results = parse_query_results(path)
+print("get pairs")
 pairs = get_pairs(query_results)
 print(len(pairs))
-
-n_pairs = get_miRNA_and_host_sequences(pairs,"cel-pre","mRNA")
+print("get host")
+n_pairs = get_miRNA_and_host_sequences(pairs,"cel","mRNA")
 """
 res = get_3_tag_UTR("WBGene00001520|WBGene00001520.1|K09A9.5.1|gas-1")
 print(res)
 seq = "ATACTCAACTCATTAGGCACGTAGACGGATTCTCTATAGCACATTCTCAACTCACTCTTTATTTATCCCTTGCACCGCGAAATGTGTTCTGTTTATTTTCTTTTCTTTTCAAAGTTCGTTTTTTTCTGAAATTCAAAAATGTAGATTTGTATCTGTTCACTGTTGTTCAGGATGTTCAATAAATAAGTCTGCAACCAAGACGCAAAG"
 print(seq == res)
 """
+print("Updating seed criteria")
+
 final_pairs = is_seed_criteria_met_in_pairs(n_pairs)
 for pair in final_pairs:
-    print(pair)
+    if pair["is_target"]:
+        print(pair)
