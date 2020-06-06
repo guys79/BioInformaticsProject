@@ -1,7 +1,5 @@
-from Bio import SearchIO
 from Bio.Seq import Seq
 import os
-import csv
 def parse_query_results(path):
     """
     This fucntion will p[arse the query results
@@ -115,10 +113,21 @@ def get_miRNA_and_host_sequences(pairs,miRNA_flie_name,mRNA_file_name):
 
 
 def get_seed(sequence):
+    """
+    This function will return the seed of the sequence
+    :param sequence: The sequence
+    :return: The seed of the sequence
+    """
     return sequence[1:8]
 
 
 def is_seed_criteria_met(miRNA,mRNA):
+    """
+    This function will check if the seed criteria is met
+    :param miRNA: The miRNA sequence
+    :param mRNA: The mRNA sequence
+    :return: True IFF the seed criteria is met
+    """
     if mRNA == "Sequence unavailable":
         return "unknown"
     miRNA_seed = get_seed(miRNA)
@@ -128,6 +137,12 @@ def is_seed_criteria_met(miRNA,mRNA):
     return miRNA_seed._data in mRNA
 
 def is_seed_criteria_met_in_pairs(pairs):
+    """
+    This function will return a dictionary that contains weather the seed criteria is met.
+    This process occurs for every pair in the pairs' list
+    :param pairs: The given pairs list
+    :return: A dictionary that contains weather the seed criteria is met.
+    """
     res = []
     for pair in pairs:
         dictionary = {}
@@ -144,6 +159,11 @@ def is_seed_criteria_met_in_pairs(pairs):
 
 
 def parse_results_to_csv(query_results):
+    """
+    This function will parse the results and save them in a csv file name 'results.csv'
+    :param query_results: The given data to save
+    :return: None
+    """
     with open('results.csv', 'w') as file:
         file.write("")
     with open('results.csv','a') as file:
@@ -161,37 +181,14 @@ def parse_results_to_csv(query_results):
             line = "%s\n" % line
             f.write(line)
 
-"""
-def combine_results(final_pairs_mRNA,query_results_cbr,query_results_mRNA):
-    results = {}
-
-    for dictionary in query_results_mRNA:
-        description_dictionary = {}
-        miRNA_name = dictionary['qseqid']
-        description_dictionary['C.elegans mature name'] = miRNA_name
-        last_ = miRNA_name.rfind('_')
-        miRNA_name_pre = "%s%s" % (miRNA_name[:last_], "_pre")
-        description_dictionary['C.elegans pre-miRNA name '] = miRNA_name_pre
-
-
-
-    for dictionary in final_pairs_mRNA:
-        miRNA_name = dictionary['miRNA_name']
-        description_dictionary = results[miRNA_name]
-        description_dictionary['C.elegans mature sequence'] = dictionary['miRNA_seq']
-        description_dictionary['Host gene name'] = dictionary['Host_name']
-        description_dictionary['Targets the host gene'] = dictionary['is_target']
-        results[dictionary['miRNA_name']] = description_dictionary
-
-    for dictionary in query_results_cbr:
-        qseqid = dictionary['qseqid']
-        description_dictionary = results[qseqid]
-        if not 'Host gene name' in description_dictionary:
-            description_dictionary['Host gene name'] = '-'
-            description_dictionary['Targets the host gene'] = '-'
-"""
 
 def get_all_cell_dictionaries(path_cel,path_cel_pre):
+    """
+    This function will return all the C.elegans miRNA's
+    :param path_cel: The path to the C.elegans miRNA's files
+    :param path_cel_pre: The path to the pre-mature C.elegans miRNA's files
+    :return: A dictionary containing all the C.elegans miRNA's
+    """
     cel_file = open(path_cel,'r')
 
     all_cell_dictionary = []
@@ -246,7 +243,12 @@ def get_all_cell_dictionaries(path_cel,path_cel_pre):
     return combined
 
 def add_host_data(all_cell_dictionary, final_pairs_mRNA):
-
+    """
+    This function will add the host data to the given cel dictionary
+    :param all_cell_dictionary: The cell dictionary
+    :param final_pairs_mRNA: The host data
+    :return: None
+    """
     for i in range(len(all_cell_dictionary)):
         cell_dictionary = all_cell_dictionary[i]
         name = cell_dictionary['C.elegans mature name']
@@ -267,8 +269,14 @@ def add_host_data(all_cell_dictionary, final_pairs_mRNA):
             cell_dictionary["Host gene name"] = "-"
             cell_dictionary["Targets the host gene"] = '-'
 
+
 def add_cbr_data(all_cell_dictionary, query_results_cbr):
-    print()
+    """
+    This function will add the C.briggsae data to the given cel dictionary
+    :param all_cell_dictionary: The cell dictionary
+    :param query_results_cbr: The C.briggsae data
+    :return: None
+    """
     for i in range(len(all_cell_dictionary)):
         cell_dictionary = all_cell_dictionary[i]
         name = cell_dictionary['C.elegans mature name']
@@ -286,32 +294,29 @@ def add_cbr_data(all_cell_dictionary, query_results_cbr):
 
 
 
+if __name__ == "__main__":
 
+    path_mRNA = "%s\%s" %(os.path.dirname(os.path.abspath(__file__)),r"Resources\res_blastn_compact_mRNA.fasta")
+    path_cbr = "%s\%s" %(os.path.dirname(os.path.abspath(__file__)),r"Resources\res_blastn_compact_cbr.fasta")
+    path_cel = "%s\%s" %(os.path.dirname(os.path.abspath(__file__)),r"Resources\cel.fasta")
+    path_cel_pre = "%s\%s" %(os.path.dirname(os.path.abspath(__file__)),r"Resources\cel-pre.fasta")
 
+    print("parsing query result")
+    query_results_mRNA = parse_query_results(path_mRNA)
+    query_results_cbr = parse_query_results(path_cbr)
 
+    print("get pairs")
+    pairs_mRNA = get_pairs(query_results_mRNA)
+    get_cbr_miRNA_That_Met_threshold(query_results_cbr)
 
+    print("get host")
+    new_pairs_mRNA = get_miRNA_and_host_sequences(pairs_mRNA,"cel","mRNA")
 
-path_mRNA = "%s\%s" %(os.path.dirname(os.path.abspath(__file__)),r"Resources\res_blastn_compact_mRNA.fasta")
-path_cbr = "%s\%s" %(os.path.dirname(os.path.abspath(__file__)),r"Resources\res_blastn_compact_cbr.fasta")
-path_cel = "%s\%s" %(os.path.dirname(os.path.abspath(__file__)),r"Resources\cel.fasta")
-path_cel_pre = "%s\%s" %(os.path.dirname(os.path.abspath(__file__)),r"Resources\cel-pre.fasta")
+    print("Updating seed criteria")
+    final_pairs_mRNA = is_seed_criteria_met_in_pairs(new_pairs_mRNA)
 
-print("parsing query result")
-query_results_mRNA = parse_query_results(path_mRNA)
-query_results_cbr = parse_query_results(path_cbr)
-
-print("get pairs")
-pairs_mRNA = get_pairs(query_results_mRNA)
-get_cbr_miRNA_That_Met_threshold(query_results_cbr)
-
-print("get host")
-new_pairs_mRNA = get_miRNA_and_host_sequences(pairs_mRNA,"cel","mRNA")
-
-print("Updating seed criteria")
-final_pairs_mRNA = is_seed_criteria_met_in_pairs(new_pairs_mRNA)
-
-print("Gathering data")
-all_cell_dictionary = get_all_cell_dictionaries(path_cel,path_cel_pre)
-add_host_data(all_cell_dictionary,final_pairs_mRNA)
-add_cbr_data(all_cell_dictionary,query_results_cbr)
-parse_results_to_csv(all_cell_dictionary)
+    print("Gathering data")
+    all_cell_dictionary = get_all_cell_dictionaries(path_cel,path_cel_pre)
+    add_host_data(all_cell_dictionary,final_pairs_mRNA)
+    add_cbr_data(all_cell_dictionary,query_results_cbr)
+    parse_results_to_csv(all_cell_dictionary)
