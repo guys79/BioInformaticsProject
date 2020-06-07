@@ -80,13 +80,16 @@ def get_3_tag_UTR(host_header,file_name):
     if sequence!= "":
         return sequence
 
-    print("a;sldja;lsdjkl;ad")
     return None # Should not get here
 
 def get_cbr_miRNA_That_Met_threshold(query_results_cbr):
-
+    """
+    This function will add the 'is_conserved' key to the dictionaries
+    :param query_results_cbr: the list of dictionaries
+    :return: None
+    """
     for query_res in query_results_cbr:
-        pident = query_res['pident']
+        pident = float(query_res['pident'])
         if  pident == 100:
             query_res['is_conserved'] = True
         else:
@@ -304,7 +307,12 @@ if __name__ == "__main__":
     print("parsing query result")
     query_results_mRNA = parse_query_results(path_mRNA)
     query_results_cbr = parse_query_results(path_cbr)
-
+    count =0
+    for dict in query_results_mRNA:
+        if float(dict["pident"]) == 100:
+            count+=1
+    print(count)
+    print(len(query_results_mRNA))
     print("get pairs")
     pairs_mRNA = get_pairs(query_results_mRNA)
     get_cbr_miRNA_That_Met_threshold(query_results_cbr)
