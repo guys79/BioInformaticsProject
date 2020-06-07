@@ -307,12 +307,7 @@ if __name__ == "__main__":
     print("parsing query result")
     query_results_mRNA = parse_query_results(path_mRNA)
     query_results_cbr = parse_query_results(path_cbr)
-    count =0
-    for dict in query_results_mRNA:
-        if float(dict["pident"]) == 100:
-            count+=1
-    print(count)
-    print(len(query_results_mRNA))
+
     print("get pairs")
     pairs_mRNA = get_pairs(query_results_mRNA)
     get_cbr_miRNA_That_Met_threshold(query_results_cbr)
